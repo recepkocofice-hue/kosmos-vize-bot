@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  kosmos-bot:
+    build: .
+    container_name: kosmos-visa-bot
+    restart: unless-stopped
+
+    # Environment configuration
+    env_file:
+      - .env
+
+    # Mount volumes for persistence
+    volumes:
+      - ./data:/app/data
+      - ./screenshots:/app/screenshots
+      - ./bot_state.db:/app/bot_state.db
+
+    # For non-headless mode, uncomment these:
+    # environment:
+    #   - DISPLAY=:99
+    # volumes:
+    #   - /tmp/.X11-unix:/tmp/.X11-unix
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('https://api.kosmosvize.com.tr', timeout=5)"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
